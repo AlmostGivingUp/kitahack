@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "645820884542",
+    "project_id": "oltie-3480a",
+    "storage_bucket": "oltie-3480a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:645820884542:android:22b87f95cb7af71ed3536f",
+        "android_client_info": {
+          "package_name": "com.mandy_34601465.kitahack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAgol9C2lElnxSqz2i-tcm8U7daVKswVLU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
