@@ -197,17 +197,17 @@ fun MessageInput(
         Row(
             modifier = Modifier
                 .padding(16.dp)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Microphone icon - STT trigger
-            IconButton {
+            IconButton(
                 onClick = {
                     startSpeechToText()
-                }
+                },
                 modifier = Modifier
-                    .align(Alignment.CenterVertically)
                     .weight(0.15f)
-            }
+            ) {
                 Icon(
                     painter = painterResource(id = R.drawable.mic),
                     contentDescription = "Microphone",
@@ -236,7 +236,6 @@ fun MessageInput(
                     capitalization = KeyboardCapitalization.Sentences,
                 ),
                 modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
                     .fillMaxWidth()
                     .weight(0.85f)
             )
@@ -250,7 +249,6 @@ fun MessageInput(
                 },
                 modifier = Modifier
                     .padding(start = 16.dp)
-                    .align(Alignment.CenterHorizontally)
                     .fillMaxWidth()
                     .weight(0.15f)
             ) {
@@ -262,4 +260,5 @@ fun MessageInput(
             }
         }
     }
+}
 
