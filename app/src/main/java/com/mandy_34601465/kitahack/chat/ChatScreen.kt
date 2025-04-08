@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -32,11 +33,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -80,7 +85,8 @@ internal fun ChatRoute(
                 .fillMaxSize()
         ) {
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier.fillMaxWidth()
+                    .padding(top = 0.dp, bottom = 20.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.Center,
             ) {
@@ -174,6 +180,9 @@ fun ChatBubbleItem(
     }
 }
 
+
+//Speech recog to be added here:
+
 @Composable
 fun MessageInput(
     onSendMessage: (String) -> Unit,
@@ -181,19 +190,47 @@ fun MessageInput(
 ) {
     var userMessage by rememberSaveable { mutableStateOf("") }
 
+
+    //Added part stt
+    var spokenText by remember { mutableStateOf("") }
+    var isListening by remember { mutableStateOf(false) }
+    var context = LocalContext.current
+    var speech by remember { mutableStateOf(false) }
+
+    val speechHelper = remember {
+        SpeechToText(
+            activity = context,
+            onResult = {
+                spokenText = it
+                isListening = false
+            },
+            onError = {
+                spokenText = "Error: $it"
+                isListening = false
+            }
+        )
+    }
+
     ElevatedCard(
         modifier = Modifier
             .fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
                 .fillMaxWidth()
+                .padding(20.dp)
         ) {
+
+
             OutlinedTextField(
                 value = userMessage,
                 label = { Text(stringResource(R.string.chat_label)) },
-                onValueChange = { userMessage = it },
+                onValueChange = {
+                    if (speech) {
+                        spokenText = it
+                    } else {
+                        userMessage = it
+                }},
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                 ),
@@ -202,6 +239,38 @@ fun MessageInput(
                     .fillMaxWidth()
                     .weight(0.85f)
             )
+
+            IconButton(
+                onClick = {
+                    if (speech == true) {
+                        speech = false
+                    } else {speech = true}
+                    isListening = true
+                    speechHelper.startListening()
+                    println("listening")
+                },
+                modifier = Modifier
+                    .padding(start = 3.dp)
+                    .align(Alignment.CenterVertically)
+                    .fillMaxWidth()
+                    .weight(0.3f)
+            ){
+                Icon(
+                    painter =
+                        if (speech) {
+                            painterResource(R.drawable.mic)
+                        } else {
+                            painterResource(R.drawable.closemic)
+                        }
+                    ,
+                    contentDescription = stringResource(R.string.action_send),
+                    modifier = Modifier
+                        .size(60.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                )
+            }
+
+
             IconButton(
                 onClick = {
                     if (userMessage.isNotBlank()) {
@@ -211,10 +280,10 @@ fun MessageInput(
                     }
                 },
                 modifier = Modifier
-                    .padding(start = 16.dp)
+                    .padding(start = 3.dp)
                     .align(Alignment.CenterVertically)
                     .fillMaxWidth()
-                    .weight(0.15f)
+                    .weight(0.13f)
             ) {
                 Icon(
                     Icons.Default.Send,
