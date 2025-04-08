@@ -76,9 +76,9 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
     // Speech-to-Text
-
+    implementation("androidx.core:core-ktx:1.12.0")
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
-    implementation("com.github.alphacep:vosk-android:0.3.42")
+//    implementation("com.github.alphacep:vosk-android:0.3.42")
 
 //    implementation("com.alphacephei")
     //implementation(group: 'com.alphacephei', name: 'vosk-android', version: '0.3.32+')
@@ -106,7 +106,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.core:core-ktx:1.13.0")
 }
-//TODO: pip3 install vosk
+// pip3 install vosk
 // or pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.42/vosk-0.3.42-py3-none-linux_riscv64.whl
 //repositories {
 //    mavenCentral()

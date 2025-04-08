@@ -46,11 +46,67 @@ import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 //dotnet add package Vosk //TODO: is this right???
+import androidx.core.content.ContextCompat
 
 class MainActivity : ComponentActivity() {
+    fun startSpeechToText() {
+        val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+        speechRecognizerIntent.putExtra(
+            RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+            RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
+        )
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+        speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
+
+        val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
+        speechRecognizer.setRecognitionListener(object : RecognitionListener {
+            override fun onReadyForSpeech(bundle: Bundle?) {}
+            override fun onBeginningOfSpeech() {}
+            override fun onRmsChanged(v: Float) {}
+            override fun onBufferReceived(bytes: ByteArray?) {}
+            override fun onEndOfSpeech() {}
+            override fun onError(i: Int) {}
+
+            override fun onResults(bundle: Bundle) {
+                val result = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                if (!result.isNullOrEmpty()) {
+                    // result[0] will give the output of speech
+                    val recognizedText = result[0]
+                    runOnUiThread{
+                        //TODO: Pass recognised text to the chat input
+                    }
+                }
+            }
+
+            override fun onPartialResults(bundle: Bundle) {}
+            override fun onEvent(i: Int, bundle: Bundle?) {}
+        })
+        // starts listening ...
+        speechRecognizer.startListening(speechRecognizerIntent)
+    }
+
+    private fun checkAudioPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {  // M = 23
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    "android.permission.RECORD_AUDIO"
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // this will open settings which asks for permission
+                val intent = Intent(
+                    Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                    Uri.parse("package:com.programmingtech.offlinespeechtotext")
+                )
+                startActivity(intent)
+                Toast.makeText(this, "Allow Microphone Permission", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        checkAudioPermission()
         setContent {
             KitahackTheme {
                 // A surface container using the 'background' color from the theme
@@ -68,64 +124,15 @@ class MainActivity : ComponentActivity() {
                             LoadingScreen(navController)
                         }
                         composable("chat") {
-                            ChatRoute()
+                            ChatRoute(startSpeechToText = ::startSpeechToText)
                         }
                     }
                 }
             }
         }
-
-        fun startSpeechToText() {
-            val speechRecognizerIntent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
-            speechRecognizerIntent.putExtra(
-                RecognizerIntent.EXTRA_LANGUAGE_MODEL,
-                RecognizerIntent.LANGUAGE_MODEL_FREE_FORM
-            )
-            speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-            speechRecognizerIntent.putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-
-            val speechRecognizer = SpeechRecognizer.createSpeechRecognizer(this)
-            speechRecognizer.setRecognitionListener(object : RecognitionListener {
-                override fun onReadyForSpeech(bundle: Bundle?) {}
-                override fun onBeginningOfSpeech() {}
-                override fun onRmsChanged(v: Float) {}
-                override fun onBufferReceived(bytes: ByteArray?) {}
-                override fun onEndOfSpeech() {}
-                override fun onError(i: Int) {}
-
-                override fun onResults(bundle: Bundle) {
-                    val result = bundle.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    if (result != null) {
-                        // result[0] will give the output of speech
-                    }
-                }
-
-                override fun onPartialResults(bundle: Bundle) {}
-                override fun onEvent(i: Int, bundle: Bundle?) {}
-            })
-            // starts listening ...
-            speechRecognizer.startListening(speechRecognizerIntent)
-        }
-
-        fun checkAudioPermission() {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {  // M = 23
-                if (ContextCompat.checkSelfPermission(
-                        this,
-                        "android.permission.RECORD_AUDIO"
-                    ) != PackageManager.PERMISSION_GRANTED
-                ) {
-                    // this will open settings which asks for permission
-                    val intent = Intent(
-                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.parse("package:com.programmingtech.offlinespeechtotext")
-                    )
-                    startActivity(intent)
-                    Toast.makeText(this, "Allow Microphone Permission", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
     }
 }
+
 
 
 

@@ -48,13 +48,17 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.mandy_34601465.kitahack.GenerativeViewModelFactory
 import com.mandy_34601465.kitahack.R
 import kotlinx.coroutines.launch
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
+
 
 
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
 internal fun ChatRoute(
     chatViewModel: ChatViewModel = viewModel(factory = GenerativeViewModelFactory),
-    startSpeechToText = {startSpeechToText()}
+    startSpeechToText: () -> Unit
 ) {
     val chatUiState by chatViewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
@@ -73,7 +77,7 @@ internal fun ChatRoute(
                         listState.scrollToItem(0)
                     }
                 },
-                startSpeechToText = startSpeechToText() // Pass fn to MessageInput
+                startSpeechToText = startSpeechToText // Pass fn to MessageInput
             )
         }
     ) { paddingValues ->
@@ -258,5 +262,4 @@ fun MessageInput(
             }
         }
     }
-}
-}
+
