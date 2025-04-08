@@ -195,18 +195,16 @@ fun MessageInput(
     var spokenText by remember { mutableStateOf("") }
     var isListening by remember { mutableStateOf(false) }
     var context = LocalContext.current
-    var speech by remember { mutableStateOf(false) }
+
 
     val speechHelper = remember {
         SpeechToText(
             activity = context,
             onResult = {
                 spokenText = it
-                isListening = false
             },
             onError = {
                 spokenText = "Error: $it"
-                isListening = false
             }
         )
     }
@@ -223,10 +221,10 @@ fun MessageInput(
 
 
             OutlinedTextField(
-                value = userMessage,
+                value = if (isListening) spokenText else userMessage,
                 label = { Text(stringResource(R.string.chat_label)) },
                 onValueChange = {
-                    if (speech) {
+                    if (isListening) {
                         spokenText = it
                     } else {
                         userMessage = it
@@ -242,12 +240,13 @@ fun MessageInput(
 
             IconButton(
                 onClick = {
-                    if (speech == true) {
-                        speech = false
-                    } else {speech = true}
-                    isListening = true
-                    speechHelper.startListening()
-                    println("listening")
+                    if (isListening) {
+                        isListening = false
+                        speechHelper.stopListening()
+
+                    } else {
+                        isListening = true
+                        speechHelper.startListening()}
                 },
                 modifier = Modifier
                     .padding(start = 3.dp)
@@ -257,7 +256,7 @@ fun MessageInput(
             ){
                 Icon(
                     painter =
-                        if (speech) {
+                        if (isListening) {
                             painterResource(R.drawable.mic)
                         } else {
                             painterResource(R.drawable.closemic)
@@ -273,9 +272,10 @@ fun MessageInput(
 
             IconButton(
                 onClick = {
-                    if (userMessage.isNotBlank()) {
-                        onSendMessage(userMessage)
+                    if (userMessage.isNotBlank() or spokenText.isNotBlank()) {
+                        onSendMessage(if (userMessage.isNotBlank()) userMessage else spokenText)
                         userMessage = ""
+                        spokenText = ""
                         resetScroll()
                     }
                 },

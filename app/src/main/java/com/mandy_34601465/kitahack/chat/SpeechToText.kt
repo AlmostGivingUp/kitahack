@@ -2,10 +2,15 @@ package com.mandy_34601465.kitahack.chat
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import java.util.jar.Manifest
 
 class SpeechToText(
     private val activity: Context,
@@ -29,27 +34,29 @@ class SpeechToText(
 
 
             speechRecognizer?.setRecognitionListener(object : RecognitionListener {
-                override fun onReadyForSpeech(params: Bundle?) {}
+                override fun onReadyForSpeech(params: Bundle?) {
+                    Toast.makeText(activity, "Listening...", Toast.LENGTH_SHORT).show()
+                }
                 override fun onBeginningOfSpeech() {}
                 override fun onRmsChanged(rmsdB: Float) {}
                 override fun onBufferReceived(buffer: ByteArray?) {}
-                override fun onEndOfSpeech() {}
+                override fun onEndOfSpeech() {
+                    Toast.makeText(activity, "Stopped Listening...", Toast.LENGTH_SHORT).show()
+                }
                 override fun onPartialResults(partialResults: Bundle?) {}
                 override fun onEvent(eventType: Int, params: Bundle?) {}
 
+
                 override fun onError(error: Int) {
-                    val errorMessage = getErrorText(error)
+                    val errorMessage = ""
                     onError(errorMessage)
                 }
 
-
-                override fun onResults(results: Bundle) {
-                    val matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
-                    if (!matches.isNullOrEmpty()) {
-                        onResult(matches[0])
-                    } else {
-                        onError("No speech recognized")
-                    }
+                override fun onResults(results: Bundle?) {
+                    val spoken = results
+                        ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
+                        ?.firstOrNull()
+                    onResult(spoken ?: "")
                 }
             })
             speechRecognizer?.startListening(intent)
