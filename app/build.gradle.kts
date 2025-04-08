@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.mandy_34601465.kitahack"
-        minSdk = 24
+        minSdk = 21
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.support.annotations)
     implementation(libs.material)
     implementation(libs.androidx.games.activity)
+    implementation(libs.androidx.navigation.runtime.android)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
@@ -74,8 +75,21 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
+    // Speech-to-Text
+
     implementation("com.google.ai.client.generativeai:generativeai:0.9.0")
+    implementation("com.github.alphacep:vosk-android:0.3.42")
+
+//    implementation("com.alphacephei")
+    //implementation(group: 'com.alphacephei', name: 'vosk-android', version: '0.3.32+')
+    /*
+    implementation("com.google.cloud:google-cloud-speech:2.9.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.12.0")
+    */
+//    implementation("")
+
     // Firebase SDK
+
     implementation(platform("com.google.firebase:firebase-bom:32.0.0"))
     implementation("com.google.firebase:firebase-database-ktx")
     implementation("com.google.firebase:firebase-storage-ktx")
@@ -92,3 +106,8 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     implementation("androidx.core:core-ktx:1.13.0")
 }
+//TODO: pip3 install vosk
+// or pip3 install https://github.com/alphacep/vosk-api/releases/download/v0.3.42/vosk-0.3.42-py3-none-linux_riscv64.whl
+//repositories {
+//    mavenCentral()
+//}

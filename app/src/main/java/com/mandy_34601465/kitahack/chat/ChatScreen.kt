@@ -37,6 +37,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -52,7 +53,8 @@ import kotlinx.coroutines.launch
 @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
 @Composable
 internal fun ChatRoute(
-    chatViewModel: ChatViewModel = viewModel(factory = GenerativeViewModelFactory)
+    chatViewModel: ChatViewModel = viewModel(factory = GenerativeViewModelFactory),
+    startSpeechToText = {startSpeechToText()}
 ) {
     val chatUiState by chatViewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
@@ -70,7 +72,8 @@ internal fun ChatRoute(
                     coroutineScope.launch {
                         listState.scrollToItem(0)
                     }
-                }
+                },
+                startSpeechToText = startSpeechToText() // Pass fn to MessageInput
             )
         }
     ) { paddingValues ->
@@ -174,10 +177,12 @@ fun ChatBubbleItem(
     }
 }
 
+//TODO: Speech to text to replace keyboartd input
 @Composable
 fun MessageInput(
     onSendMessage: (String) -> Unit,
-    resetScroll: () -> Unit = {}
+    resetScroll: () -> Unit = {},
+    startSpeechToText: () -> Unit
 ) {
     var userMessage by rememberSaveable { mutableStateOf("") }
 
@@ -190,15 +195,44 @@ fun MessageInput(
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            // Microphone icon - STT trigger
+            IconButton {
+                onClick = {
+                    startSpeechToText()
+                }
+                modifier = Modifier
+                    .align(Alignment.CenterVertically)
+                    .weight(0.15f)
+            }
+                Icon(
+                    painter = painterResource(id = R.drawable.mic),
+                    contentDescription = "Microphone",
+                    modifier = Modifier
+                )
+            }
+
+            //Area of the message to be sent are being filled
             OutlinedTextField(
                 value = userMessage,
                 label = { Text(stringResource(R.string.chat_label)) },
+                //TODO: on value change here we'll build a new variable that detects whether speech to text is triggered
+                /*
+                * For example
+                *  end_response = if (speech?) {
+                * return speech()
+                * } else {
+                *  return userMessage
+                * }
+                *
+                * end_response = it
+                *
+                * */
                 onValueChange = { userMessage = it },
                 keyboardOptions = KeyboardOptions(
                     capitalization = KeyboardCapitalization.Sentences,
                 ),
                 modifier = Modifier
-                    .align(Alignment.CenterVertically)
+                    .align(Alignment.CenterHorizontally)
                     .fillMaxWidth()
                     .weight(0.85f)
             )
@@ -212,7 +246,7 @@ fun MessageInput(
                 },
                 modifier = Modifier
                     .padding(start = 16.dp)
-                    .align(Alignment.CenterVertically)
+                    .align(Alignment.CenterHorizontally)
                     .fillMaxWidth()
                     .weight(0.15f)
             ) {
@@ -224,4 +258,5 @@ fun MessageInput(
             }
         }
     }
+}
 }
