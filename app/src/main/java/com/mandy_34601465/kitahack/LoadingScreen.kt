@@ -1,6 +1,7 @@
 package com.mandy_34601465.kitahack
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -17,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,21 +31,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import kotlinx.coroutines.delay
 
 @Composable
 fun LoadingScreen(navController: NavHostController) {
-    var loadingProgress by remember { mutableStateOf(0f) }
+    var loadingProgress by remember { mutableFloatStateOf(0f) }
 
     // Simulate loading process with a delay
     LaunchedEffect(Unit) {
         // Simulate a loading process (you can adjust the delay for real use)
-        kotlinx.coroutines.delay(3000)  // 3 seconds delay before moving to the next screen
+        delay(3000)  // 3 seconds delay before moving to the next screen
         navController.navigate("chat") // Navigate to the chat screen
     }
 
     val progress by animateFloatAsState(
         targetValue = loadingProgress,
-        animationSpec = androidx.compose.animation.core.tween(5000)
+        animationSpec = tween(5000)
     )
 
     Column(
@@ -85,7 +88,7 @@ fun LoadingScreen(navController: NavHostController) {
     // Update loading progress over time
     LaunchedEffect(Unit) {
         for (i in 0..100 step 5) {
-            kotlinx.coroutines.delay(150) // Delay for smooth loading progress
+            delay(150) // Delay for smooth loading progress
             loadingProgress = i / 100f
         }
     }

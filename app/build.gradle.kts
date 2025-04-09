@@ -65,6 +65,7 @@ dependencies {
     implementation(libs.support.annotations)
     implementation(libs.material)
     implementation(libs.androidx.games.activity)
+    implementation(libs.androidx.navigation.runtime.android)
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
