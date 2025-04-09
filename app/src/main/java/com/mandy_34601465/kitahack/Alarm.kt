@@ -19,8 +19,8 @@ import android.os.Build
 import java.util.Calendar
 
 class AlarmScheduler(private val context: Context) {
+
     fun shouldScheduleReminderFromResponse(response: String): Boolean {
-        //Triggered only if a reminder is set.
         val triggerPhrases = listOf(
             "I'll remind you",
             "Righty tighty.",
@@ -31,75 +31,63 @@ class AlarmScheduler(private val context: Context) {
         return triggerPhrases.any { response.contains(it, ignoreCase = true) }
     }
 
-
-    //TODO: Handle edge cases of different days/times and such
-
     fun handleAIResponse(responseText: String, context: Context): Unit? {
+        Log.d("AlarmScheduler", "Parsing AI response...")
         val lines = responseText.lines()
-        val dateLine = lines.find { it.startsWith("Date:") }?.removePrefix("Date:")?.trim()
+        val interval = lines.find { it.startsWith("Interval:") }?.removePrefix("Interval:")?.trim()
         val timeLine = lines.find { it.startsWith("Time:") }?.removePrefix("Time:")?.trim()
         val medLine = lines.find { it.startsWith("Medication:") }?.removePrefix("Medication:")?.trim()
 
-        if (dateLine != null && timeLine != null && medLine != null) {
-            try {
-                val (year, month, day) = dateLine.split("-").map { it.toInt() }
-                val (hour, minute) = timeLine.split(":").map { it.toInt() }
-                val calendarMonth = month - 1
-                Log.d("AlarmScheduler", "Scheduling alarm for: $year-${calendarMonth + 1}-$day $hour:$minute, Medication: $medLine")
-
-                val scheduler = AlarmScheduler(context)
-                return scheduler.scheduleReminder(
-                    date = day,
-                    month = calendarMonth,
-                    year = year,
-                    hour = hour,
-                    minute = minute,
-                    medicationName = medLine
-                )
-            } catch (e: NumberFormatException) {
-                Log.e("AlarmScheduler", "Error parsing date or time: ${e.message}", e) // Use e.message
-            } catch (e: Exception) {
-                Log.e("AlarmScheduler", "Error scheduling reminder: ${e.message}", e) // Use e.message
-            }
-        } else {
-            Log.w("AlarmScheduler", "Incomplete reminder information. Date: $dateLine, Time: $timeLine, Medication: $medLine")
+        if (interval != null && timeLine != null && medLine != null) {
+            val (hour, minute) = timeLine.split(":").map { it.toInt() }
+            return scheduleReminder(
+                interval = interval.toInt(),
+                hour = hour,
+                minute = minute,
+                title = "Medication reminder!",
+                message = medLine
+            )
         }
         return null
     }
 
-    private fun scheduleReminder(date: Int, month: Int, year: Int, hour: Int, minute: Int, medicationName: String) {
-        val alarmTime = Calendar.getInstance().apply {
-            set(Calendar.YEAR, year)
-            set(Calendar.MONTH, month) // Note: 0 = January
-            set(Calendar.DAY_OF_MONTH, date)
+    private fun scheduleReminder(
+        interval: Int,
+        hour: Int,
+        minute: Int,
+        title: String,
+        message: String,
+    ) {
+        Log.d("AlarmScheduler", "Scheduling alarm at $hour:$minute every $interval day(s)")
+
+        val calendar = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, hour)
             set(Calendar.MINUTE, minute)
             set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (timeInMillis < System.currentTimeMillis()) {
+                add(Calendar.DATE, 1)
+            }
         }
-        //Check if the time is in the past. If so, schedule for the next day
-        if (alarmTime.before(Calendar.getInstance())) {
-            alarmTime.add(Calendar.DAY_OF_MONTH, 1)
-            Log.i("AlarmScheduler", "Requested time is in the past. Scheduling for next day.")
-        }
+
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intervalInMillis: Long = AlarmManager.INTERVAL_DAY * interval
 
         val intent = Intent(context, AlarmReceiver::class.java).apply {
-            putExtra("medicationName", medicationName) // pass just the medication name
+            putExtra("title", title)
+            putExtra("message", message)
         }
 
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            alarmTime.timeInMillis.toInt(), // unique requestCode
+            calendar.timeInMillis.toInt(), // unique request code
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        Log.d("AlarmScheduler", "Setting alarm at: ${alarmTime.time}")
-
-        // Set the alarm
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            alarmTime.timeInMillis,
+            calendar.timeInMillis,
             pendingIntent
         )
     }
